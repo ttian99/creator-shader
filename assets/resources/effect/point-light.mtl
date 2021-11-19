@@ -1,0 +1,35 @@
+{
+  "__type__": "cc.Material",
+  "_name": "point-light",
+  "_objFlags": 0,
+  "_native": "",
+  "_effectAsset": {
+    "__uuid__": "6b666914-01e2-43eb-a3d1-1168a63db6e2"
+  },
+  "_techniqueIndex": 0,
+  "_techniqueData": {
+    "0": {
+      "defines": {
+        "USE_TEXTURE": true,
+        "USE_POINT_LIGHT": true
+      },
+      "props": {
+        "color": {
+          "__type__": "cc.Vec4",
+          "x": 1,
+          "y": 0,
+          "z": 0,
+          "w": 1
+        },
+        "pos": {
+          "__type__": "cc.Vec2",
+          "x": 0.5,
+          "y": 0.5
+        },
+        "radius": 0.5,
+        "enableFog": 0,
+        "clipAlpha": 1
+      }
+    }
+  }
+}

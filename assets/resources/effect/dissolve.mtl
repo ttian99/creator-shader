@@ -1,0 +1,25 @@
+{
+  "__type__": "cc.Material",
+  "_name": "dissolve",
+  "_objFlags": 0,
+  "_native": "",
+  "_effectAsset": {
+    "__uuid__": "93751c58-966d-4dbd-8b4c-95322b5e75be"
+  },
+  "_techniqueIndex": 0,
+  "_techniqueData": {
+    "0": {
+      "defines": {
+        "USE_TEXTURE": true,
+        "USE_DISSOLVE": true
+      },
+      "props": {
+        "noisetex": {
+          "__uuid__": "3fcccc35-7e35-4d07-b10d-e2dbb094d843"
+        },
+        "dissolveThreshold": 0,
+        "colorWidth": 0.1
+      }
+    }
+  }
+}

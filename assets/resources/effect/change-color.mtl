@@ -1,0 +1,23 @@
+{
+  "__type__": "cc.Material",
+  "_name": "change-color",
+  "_objFlags": 0,
+  "_native": "",
+  "_effectAsset": {
+    "__uuid__": "0de09b10-b6d5-4d6a-bd4a-848f19127f8c"
+  },
+  "_techniqueIndex": 0,
+  "_techniqueData": {
+    "0": {
+      "defines": {
+        "USE_TEXTURE": true,
+        "USE_HSV": true
+      },
+      "props": {
+        "hue": 1,
+        "saturation": 1,
+        "val": 1
+      }
+    }
+  }
+}

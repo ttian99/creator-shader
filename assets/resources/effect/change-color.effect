@@ -1,0 +1,194 @@
+// Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.  
+
+CCEffect %{
+  techniques:
+  - passes:
+    - vert: vs
+      frag: fs
+      blendState:
+        targets:
+        - blend: true
+      rasterizerState:
+        cullMode: none
+      properties:
+        texture: { value: white }
+        alphaThreshold: { value: 0.5 }
+        hue: {
+          value: 1.0,
+          editor: {
+            tooltip: "色调",
+            range: [0.0, 359.0]
+          }
+        }
+        saturation: {
+          value: 1.0,
+          editor: {
+            tooltip: "饱和度",
+            range: [0.0, 3.0]
+          }
+        }
+        val: {
+          value: 1.0,
+          editor: {
+            tooltip: "明度",
+            range: [0.0, 3.0]
+          }
+        }
+}%
+
+
+CCProgram vs %{
+  precision highp float;
+
+  #include <cc-global>
+  #include <cc-local>
+
+  in vec3 a_position;
+  in vec4 a_color;
+  out vec4 v_color;
+
+  #if USE_TEXTURE
+  in vec2 a_uv0;
+  out vec2 v_uv0;
+  #endif
+
+  void main () {
+    vec4 pos = vec4(a_position, 1);
+
+    #if CC_USE_MODEL
+    pos = cc_matViewProj * cc_matWorld * pos;
+    #else
+    pos = cc_matViewProj * pos;
+    #endif
+
+    #if USE_TEXTURE
+    v_uv0 = a_uv0;
+    #endif
+
+    v_color = a_color;
+
+    gl_Position = pos;
+  }
+}%
+
+
+CCProgram fs %{
+  precision highp float;
+  
+  #include <alpha-test>
+  #include <texture>
+
+  in vec4 v_color;
+
+  #if USE_TEXTURE
+  in vec2 v_uv0;
+  uniform sampler2D texture;
+  #endif
+
+  #if USE_HSV
+  uniform SingleColor {
+    float hue;
+    float saturation;
+    float val;
+  };
+
+  vec3 rgb_to_hsv(vec3 rgb) {
+    float R = rgb.x;
+    float G = rgb.y;
+    float B = rgb.z;
+    vec3 hsv;
+    float max1 = max(R, max(G, B));
+    float min1 = min(R, min(G, B));
+    if (R == max1) {
+        hsv.x = (G - B) / (max1 - min1);
+    }
+    if (G == max1) {
+        hsv.x = 2.0 + (B - R) / (max1 - min1);
+    }
+    if (B == max1) {
+        hsv.x = 4.0 + (R - G) / (max1 - min1);
+    }
+    hsv.x = hsv.x * 60.0;
+    if (hsv.x < 0.0) {
+        hsv.x = hsv.x + 360.0;
+    }
+    hsv.z = max1;
+    hsv.y = (max1 - min1) / max1;
+    return hsv;
+  }
+
+  vec3 hsv_to_rgb(vec3 hsv) {
+    float R;
+        float G;
+        float B;
+        if (hsv.y == 0.0) {
+            R = G = B = hsv.z;
+        }
+        else {
+        hsv.x = hsv.x / 60.0;
+        int i = int(hsv.x);
+        float f = hsv.x - float(i);
+        float a = hsv.z * (1.0 - hsv.y);
+        float b = hsv.z * (1.0 - hsv.y * f);
+        float c = hsv.z * (1.0 - hsv.y * (1.0 - f));
+        if (i == 0) {
+            R = hsv.z;
+            G = c;
+            B = a;
+        }
+        else if (i == 1) {
+            R = b;
+            G = hsv.z;
+            B = a;
+        }
+        else if (i == 2) {
+            R = a;
+            G = hsv.z;
+            B = c;
+        }
+        else if (i == 3) {
+            R = a;
+            G = b;
+            B = hsv.z;
+        }
+        else if (i == 4) {
+            R = c;
+            G = a;
+            B = hsv.z;
+        }
+        else {
+            R = hsv.z;
+            G = a;
+            B = b;
+        }
+    }
+    return vec3(R, G, B);
+  }
+
+  #endif
+
+  void main () {
+    vec4 o = vec4(1, 1, 1, 1);
+
+    #if USE_TEXTURE
+      CCTexture(texture, v_uv0, o);
+    #endif
+
+    o *= v_color;
+
+    ALPHA_TEST(o);
+
+    #if USE_HSV
+      vec3 rgbColor = vec3(o.xyz);
+      vec3 hsvColor;
+      hsvColor.xyz = rgb_to_hsv(rgbColor); //转换为hsv
+      hsvColor.x += hue; // 调整hue偏移值
+      hsvColor.x = mod(hsvColor.x, 360.0); //超过360从0开始
+      hsvColor.y *= saturation;  //调整饱和度
+      hsvColor.z *= val;
+      o.xyz = hsv_to_rgb(hsvColor);
+    #endif
+
+    gl_FragColor = o;
+  }
+}%

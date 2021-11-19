@@ -1,0 +1,28 @@
+{
+  "__type__": "cc.Material",
+  "_name": "twist",
+  "_objFlags": 0,
+  "_native": "",
+  "_effectAsset": {
+    "__uuid__": "d5a78f2d-a064-4de7-af9d-08b51b35c532"
+  },
+  "_techniqueIndex": 0,
+  "_techniqueData": {
+    "0": {
+      "props": {
+        "noisetex": {
+          "__uuid__": "3fcccc35-7e35-4d07-b10d-e2dbb094d843"
+        },
+        "isHorizontal": 0,
+        "isVertical": 0.9,
+        "speedFactor": 0.2,
+        "strengthFactor": 0.1
+      },
+      "defines": {
+        "USE_TEXTURE": true,
+        "USE_NOISETEX": true,
+        "USE_ALPHA_TEST": false
+      }
+    }
+  }
+}

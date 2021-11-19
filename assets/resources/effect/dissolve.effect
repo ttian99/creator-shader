@@ -1,0 +1,119 @@
+// Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.  
+
+//噪声消融
+//原理：根据噪声纹理的颜色值和消融阈值(noiseThreshold)判断，当达到阈值时，丢弃(discard)该片元像素。
+
+CCEffect %{
+  techniques:
+  - passes:
+    - vert: vs
+      frag: fs
+      blendState:
+        targets:
+        - blend: true
+      rasterizerState:
+        cullMode: none
+      properties:
+        texture: { value: white }
+        alphaThreshold: { value: 0.5 }
+        # 噪声纹理
+        noisetex: { value: white }
+        dissolveThreshold: { 
+          value: 0.5,
+          editor: {
+            tooltip: "溶解阈值",
+            range: [0.0, 1.0, 0.1],
+            slide: true
+          }
+        }
+        colorWidth: { value: 0.1, editor: {min: 0.0, max: 0.3, progress: true, step: 0.02 } }
+        burnColorInner: { value: [1.0, 1.0, 0.0, 1.0], editor: {type: 'color' } }
+        burnColorOut: { value: [1.0, 0.0, 0.0, 1.0], editor: {type: 'color' } }
+}%
+
+
+CCProgram vs %{
+  precision highp float;
+
+  #include <cc-global>
+  #include <cc-local>
+
+  in vec3 a_position;
+  in vec4 a_color;
+  out vec4 v_color;
+
+  #if USE_TEXTURE
+  in vec2 a_uv0;
+  out vec2 v_uv0;
+  #endif
+
+  void main () {
+    vec4 pos = vec4(a_position, 1);
+
+    #if CC_USE_MODEL
+    pos = cc_matViewProj * cc_matWorld * pos;
+    #else
+    pos = cc_matViewProj * pos;
+    #endif
+
+    #if USE_TEXTURE
+    v_uv0 = a_uv0;
+    #endif
+
+    v_color = a_color;
+
+    gl_Position = pos;
+  }
+}%
+
+
+CCProgram fs %{
+  precision highp float;
+  
+  #include <alpha-test>
+  #include <texture>
+
+  in vec4 v_color;
+
+  #if USE_TEXTURE
+  in vec2 v_uv0;
+  uniform sampler2D texture;
+  #endif
+
+  #if USE_DISSOLVE
+  uniform sampler2D noisetex;
+  uniform Dissolve {
+    vec4 burnColorInner;
+    vec4 burnColorOut;
+    float dissolveThreshold;
+    float colorWidth;
+  };
+  #endif
+
+  void main () {
+    vec4 o = vec4(1, 1, 1, 1);
+
+    #if USE_TEXTURE
+      CCTexture(texture, v_uv0, o);
+    #endif
+
+    #if USE_DISSOLVE
+      vec4 noise = vec4(1);
+      CCTexture(noisetex, v_uv0 * 3.0, noise);
+      // 小于阈值丢弃像素
+      if (noise.r < dissolveThreshold) {
+        discard;
+      }
+      // 还可以混点颜色，对阈值附近的像素点加一些颜色，就能实现燃烧效果啦。
+      float t = 1.0 - smoothstep(0.0, colorWidth, noise.r - dissolveThreshold);
+      vec3 burnColor = mix(burnColorInner.rgb, burnColorOut.rgb, t);
+      o.rgb = mix(o.rgb, burnColor.rgb,  t*step(0.0001, dissolveThreshold ));
+    #endif
+
+    o *= v_color;
+
+    ALPHA_TEST(o);
+
+    gl_FragColor = o;
+  }
+}%

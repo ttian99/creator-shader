@@ -1,0 +1,27 @@
+{
+  "__type__": "cc.Material",
+  "_name": "move",
+  "_objFlags": 0,
+  "_native": "",
+  "_effectAsset": {
+    "__uuid__": "d7664482-5d3a-4d6d-821b-f147d9c5497d"
+  },
+  "_techniqueIndex": 0,
+  "_techniqueData": {
+    "0": {
+      "props": {
+        "texture": {
+          "__uuid__": "3a75f665-a574-4fce-83d0-2ceccb52c074"
+        },
+        "texture2": {
+          "__uuid__": "8e07e828-4b03-43ab-b8e4-b3fe19f4e0fe"
+        },
+        "time": 0,
+        "fromTime": 0.2
+      },
+      "defines": {
+        "USE_TEXTURE": true
+      }
+    }
+  }
+}
